@@ -1,5 +1,7 @@
 # menu.py
 import time
+from session_runner import run_session
+
 
 session_config = {
     "mode": "FAA",
@@ -47,7 +49,7 @@ def new_session():
 
     # Placeholder for your future session logic
     time.sleep(1)
-    print("Session would begin here with current config:")
+    run_session(session_config)
     for key, value in session_config.items():
         print(f" - {key}: {value}")
 
