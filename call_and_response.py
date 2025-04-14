@@ -1,4 +1,7 @@
 import random
+import csv
+import datetime
+import os
 from session_runner import record_audio, transcribe_audio, match_phrase
 
 # Sample FAA phrase pairs
@@ -29,12 +32,13 @@ military_pairs = [
     }
 ]
 
-# Fallback or custom pool
+# Fallback for custom or mixed sessions
 mixed_pairs = faa_pairs + military_pairs
 
 def run_call_and_response_session(config):
     print("\n--- ATC Call-and-Response Session ---")
 
+    # Choose phrase set
     if config["mode"] == "FAA":
         phrase_pairs = faa_pairs
     elif config["mode"] == "Military":
@@ -42,10 +46,22 @@ def run_call_and_response_session(config):
     else:
         phrase_pairs = mixed_pairs
 
-    num_rounds = 3  # Change as needed
+    num_rounds = 3  # Can customize this later
     correct_responses = 0
     total_score = 0
 
+    # Setup logging
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    log_file = f"logs/session_log_{timestamp}.csv"
+
+    with open(log_file, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Round", "Pilot Phrase", "User Response", "Matched As", "Score"])
+
+    # Begin rounds
     for round_num in range(1, num_rounds + 1):
         print(f"\n📟 ROUND {round_num} / {num_rounds}")
 
@@ -74,10 +90,24 @@ def run_call_and_response_session(config):
             else:
                 print("❌ Not a recognized ATC response. Try again.")
 
+        # Log the round result
+        with open(log_file, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([
+                round_num,
+                pilot_phrase,
+                user_transcript,
+                matched,
+                score
+            ])
+
         input("\n[Press Enter to continue to next round]")
 
+    # Summary
     avg_score = total_score / num_rounds
     print("\n=== Session Complete ===")
     print(f"✅ Correct Responses: {correct_responses}/{num_rounds}")
     print(f"📊 Average Match Score: {avg_score:.2f}%")
+    print(f"📁 Session log saved to: {log_file}")
     input("\n[Press Enter to return to the main menu]")
+
