@@ -42,10 +42,10 @@ military_pairs = [
 ]
 
 # === Entry point for running the session ===
-def run_call_and_response_session(config):
+def run_call_and_response_session(config, custom_phrase_pairs=[]):
     print("\n--- ATC Call-and-Response Session ---")
 
-    # Choose base phrase pool
+    # Select phrase pool based on session mode
     if config["mode"] == "FAA":
         phrase_pairs = faa_pairs.copy()
     elif config["mode"] == "Military":
@@ -53,21 +53,8 @@ def run_call_and_response_session(config):
     else:
         phrase_pairs = faa_pairs + military_pairs
 
-    # Optional: Add custom phrase pair from user input
-    print("\nWould you like to add a custom pilot/controller phrase pair? (y/n)")
-    if input("> ").strip().lower() == 'y':
-        print("\n✍ Enter the simulated pilot's phrase (what the system will say):")
-        pilot_input = input("> ").strip()
-
-        print("✍ Enter the expected correct controller response:")
-        controller_input = input("> ").strip()
-
-        phrase_pairs.append({
-            "pilot": pilot_input,
-            "expected_controller": controller_input
-        })
-
-        print("✅ Custom phrase added successfully.\n")
+    # Add any custom phrase pairs provided
+    phrase_pairs += custom_phrase_pairs
 
     # Prepare session log
     if not os.path.exists("logs"):
@@ -80,7 +67,7 @@ def run_call_and_response_session(config):
         writer = csv.writer(file)
         writer.writerow(["Timestamp", "Pilot Phrase", "User Response", "Matched As", "Score"])
 
-    print("🎙️ Beginning session. Type 'exit' when you're ready to stop.\n")
+    print("🎙️ Beginning session. Say 'exit' at any time to end.\n")
 
     # === Continuous session loop ===
     while True:
