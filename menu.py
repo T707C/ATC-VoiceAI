@@ -60,7 +60,8 @@ def options_menu():
         print(f"[1] Cowboy Mode: {'On' if session_config['cowboy_mode'] else 'Off'}")
         print(f"[2] Phrase Matching: {'On' if session_config['phrase_matching'] else 'Off'}")
         print(f"[3] Live Feedback: {'On' if session_config['live_feedback'] else 'Off'}")
-        print("[4] Back to Main Menu")
+        print(f"[4] Add Custom Phrase Pair")
+        print("[5] Back to Main Menu")
 
         opt = input("> ")
 
@@ -71,9 +72,20 @@ def options_menu():
         elif opt == '3':
             session_config['live_feedback'] = not session_config['live_feedback']
         elif opt == '4':
+            print("\n✍ Enter the pilot's spoken phrase:")
+            pilot = input("> ").strip()
+            print("✍ Enter the expected ATC controller response:")
+            controller = input("> ").strip()
+
+            if pilot and controller:
+                custom_phrase_pairs.append({
+                    "pilot": pilot,
+                    "expected_controller": controller
+                })
+                print("✅ Custom phrase pair added successfully.")
+            else:
+                print("⚠ Both fields must be filled. Phrase not saved.")
+        elif opt == '5':
             break
         else:
             print("Invalid option. Try again.")
-
-if __name__ == "__main__":
-    main_menu()
