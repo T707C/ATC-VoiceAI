@@ -6,7 +6,6 @@ import os
 import pyttsx3
 from session_utils import record_audio, transcribe_audio, match_phrase
 
-# === Text-to-Speech ===
 def speak(text):
     engine = pyttsx3.init()
     engine.setProperty('rate', 175)
@@ -14,7 +13,7 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 
-# === Sample Phrase Pools ===
+# === Phrase Sets ===
 faa_pairs = [
     {"pilot": "Request taxi to runway two seven", "expected_controller": "Taxi to runway two seven via Alpha, Bravo"},
     {"pilot": "Ready for departure runway one eight", "expected_controller": "Cleared for takeoff runway one eight"},
@@ -28,60 +27,40 @@ military_pairs = [
     {"pilot": "Ready for departure, IFR clearance received", "expected_controller": "Cleared for takeoff runway one eight, maintain runway heading"}
 ]
 
+flight_sequence = [
+    {"pilot": "Ground, this is Tiger 5 requesting radio check", "expected_controller": "Tiger 5, radio check loud and clear"},
+    {"pilot": "Request taxi to runway two seven", "expected_controller": "Taxi to runway two seven via Alpha, Bravo"},
+    {"pilot": "Holding short of runway two seven", "expected_controller": "Hold short of runway two seven"},
+    {"pilot": "Ready for departure runway two seven", "expected_controller": "Cleared for takeoff runway two seven"},
+    {"pilot": "Inbound for landing, three mile final", "expected_controller": "Cleared to land runway two seven"}
+]
+
 # === GUI Session Class ===
 class TrainingSessionWindow(tk.Toplevel):
     def __init__(self, parent, config, custom_phrases):
         super().__init__(parent)
         self.title("ATC Training Session")
-        self.geometry("700x500")
+        self.geometry("700x550")
         self.configure(bg="#1a1a1a")
 
         self.config_data = config
         self.custom_phrases = custom_phrases
-        self.phrase_pairs = self.load_phrase_pool()
         self.log_file = self.create_log_file()
 
         self.create_widgets()
-        self.next_round()
+        self.select_mode()
 
     def create_widgets(self):
-        self.title_label = tk.Label(self, text="ATC Simulation", font=("Helvetica", 20, "bold"), fg="#00ffcc", bg="#1a1a1a")
-        self.title_label.pack(pady=15)
+        self.chat_display = tk.Text(self, wrap="word", font=("Helvetica", 12), bg="#262626", fg="white")
+        self.chat_display.pack(padx=20, pady=10, fill="both", expand=True)
+        self.chat_display.config(state="disabled")
 
-        self.pilot_label = tk.Label(self, text="🛩️ Pilot will speak...", font=("Helvetica", 14), fg="white", bg="#1a1a1a")
-        self.pilot_label.pack(pady=10)
+        self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round, font=("Helvetica", 13),
+                                    bg="#00cc99", fg="black", width=12, state="disabled")
+        self.run_button.pack(pady=5)
 
-        self.user_response = tk.Label(self, text="🎧 Your Response:", font=("Helvetica", 12), fg="#cccccc", bg="#1a1a1a", wraplength=600)
-        self.user_response.pack(pady=5)
-
-        self.feedback = tk.Label(self, text="", font=("Helvetica", 12), fg="#00cc99", bg="#1a1a1a", wraplength=600)
-        self.feedback.pack(pady=5)
-
-        self.score_label = tk.Label(self, text="", font=("Helvetica", 12, "bold"), fg="#ffffff", bg="#1a1a1a")
-        self.score_label.pack(pady=5)
-
-        tk.Button(
-            self, text="▶️ Respond", command=self.run_response,
-            font=("Helvetica", 13), bg="#00cc99", fg="black", width=15
-        ).pack(pady=10)
-
-        tk.Button(
-            self, text="❌ End Session", command=self.end_session,
-            font=("Helvetica", 12), bg="#333333", fg="white", width=15
-        ).pack(pady=10)
-
-    def load_phrase_pool(self):
-        mode = self.config_data.get("mode", "FAA")
-        base_pool = []
-
-        if mode == "FAA":
-            base_pool = faa_pairs
-        elif mode == "Military":
-            base_pool = military_pairs
-        else:
-            base_pool = faa_pairs + military_pairs
-
-        return base_pool + self.custom_phrases
+        tk.Button(self, text="❌ End Session", command=self.end_session,
+                  font=("Helvetica", 12), bg="#333333", fg="white", width=15).pack(pady=5)
 
     def create_log_file(self):
         if not os.path.exists("logs"):
@@ -92,27 +71,84 @@ class TrainingSessionWindow(tk.Toplevel):
             f.write("Time,Pilot Phrase,User Transcript,Matched As,Score\n")
         return filename
 
-    def next_round(self):
-        self.round_data = random.choice(self.phrase_pairs)
-        self.pilot_label.config(text=f"🛩️ Pilot says: \"{self.round_data['pilot']}\"")
-        speak(self.round_data["pilot"])
-        self.user_response.config(text="🎧 Your Response:")
-        self.feedback.config(text="")
-        self.score_label.config(text="")
+    def select_mode(self):
+        self.mode_window = tk.Toplevel(self)
+        self.mode_window.title("Select Training Mode")
+        self.mode_window.geometry("350x200")
+        self.mode_window.configure(bg="#1a1a1a")
 
-    def run_response(self):
+        tk.Label(self.mode_window, text="Choose a training mode:", font=("Helvetica", 14), fg="#00ffcc", bg="#1a1a1a").pack(pady=20)
+
+        tk.Button(self.mode_window, text="🚀 Rapid Fire Mode", font=("Helvetica", 12), width=25,
+                  bg="#262626", fg="white", command=self.start_rapid_mode).pack(pady=10)
+
+        tk.Button(self.mode_window, text="🧭 Full Flight Scenario", font=("Helvetica", 12), width=25,
+                  bg="#262626", fg="white", command=self.start_flight_mode).pack(pady=5)
+
+    def start_rapid_mode(self):
+        self.training_mode = "rapid"
+        self.mode_window.destroy()
+        self.phrase_pool = self.load_phrase_pool()
+        self.prepare_round()
+
+    def start_flight_mode(self):
+        self.training_mode = "flight"
+        self.mode_window.destroy()
+        self.sequence_index = 0
+        self.phrase_pool = flight_sequence
+        self.prepare_round()
+
+    def load_phrase_pool(self):
+        mode = self.config_data.get("mode", "FAA")
+        base_pool = []
+        if mode == "FAA":
+            base_pool = faa_pairs
+        elif mode == "Military":
+            base_pool = military_pairs
+        else:
+            base_pool = faa_pairs + military_pairs
+        return base_pool + self.custom_phrases
+
+    def prepare_round(self):
+        if self.training_mode == "rapid":
+            self.round_data = random.choice(self.phrase_pool)
+        elif self.training_mode == "flight":
+            if self.sequence_index >= len(self.phrase_pool):
+                self.append_chat("✅ FLIGHT COMPLETE")
+                self.run_button.config(state="disabled")
+                return
+            self.round_data = self.phrase_pool[self.sequence_index]
+
+        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=True)
+        self.run_button.config(state="normal")
+
+    def run_round(self):
+        self.run_button.config(state="disabled")
+        speak(self.round_data["pilot"])
+
         record_audio()
         transcript = transcribe_audio()
-        self.user_response.config(text=f"🎧 You said: \"{transcript}\"")
-
         matched, score = match_phrase(transcript, cowboy_mode=self.config_data.get("cowboy_mode", False))
-        self.feedback.config(text=f"Expected: \"{self.round_data['expected_controller']}\"\nMatched: \"{matched}\"")
-        self.score_label.config(text=f"🧠 Score: {score}%")
+
+        self.append_chat(f"🎧 YOU: {transcript}")
+        self.append_chat(f"✅ MATCH: {matched}")
+        self.append_chat(f"🧠 SCORE: {score}%\n" + "-" * 50)
 
         with open(self.log_file, "a") as f:
             f.write(f"{datetime.datetime.now()},{self.round_data['pilot']},{transcript},{matched},{score}\n")
 
-        self.after(500, self.next_round)
+        if self.training_mode == "flight":
+            self.sequence_index += 1
+
+        self.after(500, self.prepare_round)
+
+    def append_chat(self, text, clear=False):
+        self.chat_display.config(state="normal")
+        if clear:
+            self.chat_display.delete(1.0, tk.END)
+        self.chat_display.insert(tk.END, f"{text}\n\n")
+        self.chat_display.see(tk.END)
+        self.chat_display.config(state="disabled")
 
     def end_session(self):
         messagebox.showinfo("Session Ended", f"Session log saved to:\n{self.log_file}")
