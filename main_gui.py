@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 from phrasebook import phrasebook
-from session_runner import run_session  # ⬅️ LIVE session backend
+from session_runner import run_session
+from training_session_gui import TrainingSessionWindow  # NEW GUI session window
 
 # === Global Session Config ===
 session_config = {
@@ -51,12 +52,7 @@ class ATCVoiceTrainerApp(tk.Tk):
         tk.Button(self, text="Exit", command=self.quit, **button_style).pack(pady=20)
 
     def start_session(self):
-        self.withdraw()  # Hide GUI during terminal session
-        try:
-            run_session(session_config, custom_phrase_pairs)
-        except Exception as e:
-            messagebox.showerror("Error", f"Session failed to start:\n{e}")
-        self.deiconify()  # Show GUI again after session
+        TrainingSessionWindow(self, session_config, custom_phrase_pairs)
 
     def open_options(self):
         OptionsWindow(self)
