@@ -42,30 +42,42 @@ def run_call_and_response_session(config):
     else:
         phrase_pairs = mixed_pairs
 
-    selected_pair = random.choice(phrase_pairs)
-    pilot_phrase = selected_pair["pilot"]
-    expected_response = selected_pair["expected_controller"]
+    num_rounds = 3  # Change as needed
+    correct_responses = 0
+    total_score = 0
 
-    print(f"\n🛩️ Pilot says: \"{pilot_phrase}\"")
+    for round_num in range(1, num_rounds + 1):
+        print(f"\n📟 ROUND {round_num} / {num_rounds}")
 
-    # Record user response
-    record_audio()
-    user_transcript = transcribe_audio()
-    print(f"\n🎧 You said: \"{user_transcript}\"")
+        selected_pair = random.choice(phrase_pairs)
+        pilot_phrase = selected_pair["pilot"]
+        expected_response = selected_pair["expected_controller"]
 
-    # Match to expected controller response
-    matched, score = match_phrase(user_transcript, cowboy_mode=config["cowboy_mode"])
+        print(f"\n🛩️ Pilot says: \"{pilot_phrase}\"")
 
-    print(f"\nExpected Response: \"{expected_response}\"")
-    print(f"AI Best Match: \"{matched}\" (Score: {score})")
+        record_audio()
+        user_transcript = transcribe_audio()
+        print(f"\n🎧 You said: \"{user_transcript}\"")
 
-    if config["live_feedback"]:
-        if score >= 90:
-            print("✅ Perfect response!")
-        elif score >= 70:
-            print("⚠ Close, but not exact.")
-        else:
-            print("❌ Not a recognized ATC response. Try again.")
+        matched, score = match_phrase(user_transcript, cowboy_mode=config["cowboy_mode"])
+        total_score += score
 
+        print(f"\nExpected Response: \"{expected_response}\"")
+        print(f"AI Best Match: \"{matched}\" (Score: {score})")
+
+        if config["live_feedback"]:
+            if score >= 90:
+                print("✅ Perfect response!")
+                correct_responses += 1
+            elif score >= 70:
+                print("⚠ Close, but not exact.")
+            else:
+                print("❌ Not a recognized ATC response. Try again.")
+
+        input("\n[Press Enter to continue to next round]")
+
+    avg_score = total_score / num_rounds
+    print("\n=== Session Complete ===")
+    print(f"✅ Correct Responses: {correct_responses}/{num_rounds}")
+    print(f"📊 Average Match Score: {avg_score:.2f}%")
     input("\n[Press Enter to return to the main menu]")
-
