@@ -1,4 +1,5 @@
 from session_runner import run_session
+from phrasebook import phrasebook  # ← Phrasebook import
 
 # Session settings
 session_config = {
@@ -11,12 +12,35 @@ session_config = {
 # Store custom phrase pairs entered through options menu
 custom_phrase_pairs = []
 
+# === Phrasebook Viewer ===
+def view_phrasebook():
+    print("\n📖 ATC Phrasebook")
+    print("Type a phrase or keyword to look up, or type 'back' to return.")
+
+    while True:
+        query = input("\n🔍 Search: ").strip().lower()
+
+        if query == "back":
+            break
+
+        # Match all phrases that contain the query string
+        matches = [phrase for phrase in phrasebook if query in phrase.lower()]
+        
+        if matches:
+            for phrase in matches:
+                print(f"\n🛩️ {phrase}\n   📘 {phrasebook[phrase]}")
+        else:
+            print("⚠ No matching phrase found. Try another term.")
+
+# === Main Menu ===
 def main_menu():
     while True:
         print("\n=== ATC Voice AI ===")
         print("[1] Start New Session")
         print("[2] Options")
         print("[3] Exit")
+        print("[6] View Phrasebook")  # <-- New Option
+
         choice = input("> ")
 
         if choice == '1':
@@ -26,9 +50,12 @@ def main_menu():
         elif choice == '3':
             print("Goodbye!")
             break
+        elif choice == '6':
+            view_phrasebook()
         else:
             print("Invalid option. Try again.")
 
+# === Launch a New Session ===
 def new_session():
     print("\n--- Select Training Mode ---")
     print("[1] FAA")
@@ -48,6 +75,7 @@ def new_session():
 
     run_session(session_config, custom_phrase_pairs)
 
+# === Session Options Menu ===
 def options_menu():
     while True:
         print("\n--- Options ---")
@@ -84,5 +112,6 @@ def options_menu():
         else:
             print("Invalid option. Try again.")
 
+# === Entry Point ===
 if __name__ == "__main__":
     main_menu()
