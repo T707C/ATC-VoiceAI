@@ -1,10 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 from phrasebook import phrasebook
-from session_runner import run_session
-from training_session_gui import TrainingSessionWindow  # NEW GUI session window
+from training_session_gui import TrainingSessionWindow
 
-# === Global Session Config ===
+# === Global Config ===
 session_config = {
     "mode": "FAA",
     "cowboy_mode": False,
@@ -14,25 +13,17 @@ session_config = {
 
 custom_phrase_pairs = []
 
-# === Main GUI Application ===
+# === Main App ===
 class ATCVoiceTrainerApp(tk.Tk):
     def __init__(self):
         super().__init__()
-
         self.title("ATC Voice AI Trainer")
         self.geometry("600x400")
         self.configure(bg="#1a1a1a")
-
         self.create_widgets()
 
     def create_widgets(self):
-        title = tk.Label(
-            self,
-            text="ATC Voice AI Trainer",
-            font=("Helvetica", 24, "bold"),
-            fg="#00ffcc",
-            bg="#1a1a1a"
-        )
+        title = tk.Label(self, text="ATC Voice AI Trainer", font=("Helvetica", 24, "bold"), fg="#00ffcc", bg="#1a1a1a")
         title.pack(pady=30)
 
         button_style = {
@@ -60,7 +51,6 @@ class ATCVoiceTrainerApp(tk.Tk):
     def view_phrasebook(self):
         PhrasebookWindow(self)
 
-
 # === Options Window ===
 class OptionsWindow(tk.Toplevel):
     def __init__(self, parent):
@@ -74,7 +64,7 @@ class OptionsWindow(tk.Toplevel):
         label = tk.Label(self, text="Session Settings", font=("Helvetica", 16, "bold"), fg="#00ffcc", bg="#1a1a1a")
         label.pack(pady=15)
 
-        # === Mode Dropdown ===
+        # Mode Dropdown
         mode_label = tk.Label(self, text="Training Mode:", font=("Helvetica", 12), fg="white", bg="#1a1a1a")
         mode_label.pack()
 
@@ -88,39 +78,16 @@ class OptionsWindow(tk.Toplevel):
         self.create_toggle("Phrase Matching", "phrase_matching")
         self.create_toggle("Live Feedback", "live_feedback")
 
-        tk.Button(
-            self,
-            text="➕ Add Custom Phrase Pair",
-            font=("Helvetica", 12),
-            bg="#333333",
-            fg="white",
-            command=self.add_custom_phrase
-        ).pack(pady=20)
-
-        tk.Button(
-            self,
-            text="✅ Done",
-            font=("Helvetica", 12),
-            bg="#00cc99",
-            fg="black",
-            width=15,
-            command=self.save_and_close
-        ).pack(pady=10)
+        tk.Button(self, text="➕ Add Custom Phrase Pair", font=("Helvetica", 12), bg="#333333", fg="white", command=self.add_custom_phrase).pack(pady=20)
+        tk.Button(self, text="✅ Done", font=("Helvetica", 12), bg="#00cc99", fg="black", width=15, command=self.save_and_close).pack(pady=10)
 
     def create_toggle(self, label_text, config_key):
         def toggle():
             session_config[config_key] = not session_config[config_key]
             button.config(text=f"{label_text}: {'On' if session_config[config_key] else 'Off'}")
 
-        button = tk.Button(
-            self,
-            text=f"{label_text}: {'On' if session_config[config_key] else 'Off'}",
-            font=("Helvetica", 12),
-            width=30,
-            bg="#262626",
-            fg="white",
-            command=toggle
-        )
+        button = tk.Button(self, text=f"{label_text}: {'On' if session_config[config_key] else 'Off'}",
+                           font=("Helvetica", 12), width=30, bg="#262626", fg="white", command=toggle)
         button.pack(pady=5)
 
     def add_custom_phrase(self):
@@ -141,19 +108,17 @@ class OptionsWindow(tk.Toplevel):
         session_config["mode"] = self.mode_var.get()
         self.destroy()
 
-
 # === Phrasebook Viewer Window ===
 class PhrasebookWindow(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Phrasebook")
-        self.geometry("500x500")
+        self.geometry("550x550")
         self.configure(bg="#1a1a1a")
         self.create_ui()
 
     def create_ui(self):
-        title = tk.Label(self, text="📘 ATC Phrasebook", font=("Helvetica", 16, "bold"), fg="#00ffcc", bg="#1a1a1a")
-        title.pack(pady=10)
+        tk.Label(self, text="📘 ATC Phrasebook", font=("Helvetica", 16, "bold"), fg="#00ffcc", bg="#1a1a1a").pack(pady=10)
 
         self.search_var = tk.StringVar()
         search_entry = tk.Entry(self, textvariable=self.search_var, font=("Helvetica", 12), width=40)
@@ -176,20 +141,17 @@ class PhrasebookWindow(tk.Toplevel):
         query = self.search_var.get().strip().lower()
         self.results_box.delete(1.0, tk.END)
 
-        matches = [
-            (phrase, explanation)
-            for phrase, explanation in phrasebook.items()
-            if query in phrase.lower()
-        ]
+        matches = [(call, data) for call, data in phrasebook.items() if query in call.lower()]
 
         if matches:
-            for phrase, explanation in matches:
-                self.results_box.insert(tk.END, f"\n🛩️ {phrase}\n   📘 {explanation}\n")
+            for call, data in matches:
+                response = data.get("expected_response", "N/A")
+                definition = data.get("definition", "No description available.")
+                self.results_box.insert(tk.END, f"\n🛩️ Pilot: {call}\n🎧 ATC: {response}\n📘 Meaning: {definition}\n")
         else:
             self.results_box.insert(tk.END, "\n⚠ No matching phrase found.")
 
-
-# === Launch the App ===
+# === Launch App ===
 if __name__ == "__main__":
     app = ATCVoiceTrainerApp()
     app.mainloop()
