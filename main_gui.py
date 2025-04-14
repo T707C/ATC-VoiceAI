@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 from phrasebook import phrasebook
 from training_session_gui import TrainingSessionWindow
+from log_viewer import LogViewerWindow  # NEW Log Viewer!
 
 # === Global Config ===
 session_config = {
@@ -18,7 +19,7 @@ class ATCVoiceTrainerApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("ATC Voice AI Trainer")
-        self.geometry("600x400")
+        self.geometry("600x460")
         self.configure(bg="#1a1a1a")
         self.create_widgets()
 
@@ -40,6 +41,7 @@ class ATCVoiceTrainerApp(tk.Tk):
         tk.Button(self, text="Start Training Session", command=self.start_session, **button_style).pack(pady=10)
         tk.Button(self, text="Options", command=self.open_options, **button_style).pack(pady=10)
         tk.Button(self, text="View Phrasebook", command=self.view_phrasebook, **button_style).pack(pady=10)
+        tk.Button(self, text="Replay Previous Sessions", command=self.view_logs, **button_style).pack(pady=10)
         tk.Button(self, text="Exit", command=self.quit, **button_style).pack(pady=20)
 
     def start_session(self):
@@ -50,6 +52,9 @@ class ATCVoiceTrainerApp(tk.Tk):
 
     def view_phrasebook(self):
         PhrasebookWindow(self)
+
+    def view_logs(self):
+        LogViewerWindow(self)
 
 # === Options Window ===
 class OptionsWindow(tk.Toplevel):
