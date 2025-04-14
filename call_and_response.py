@@ -2,10 +2,18 @@ import random
 import csv
 import datetime
 import os
-import pyttsx3  # For Text-to-Speech
+import pyttsx3
 from session_runner import record_audio, transcribe_audio, match_phrase
 
-# Sample FAA phrase pairs
+# === Text-to-Speech: Speaks a line aloud ===
+def speak(text):
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 175)
+    engine.setProperty('volume', 1.0)
+    engine.say(text)
+    engine.runAndWait()
+
+# === Built-in FAA phrase pairs ===
 faa_pairs = [
     {
         "pilot": "Request taxi to runway two seven",
@@ -21,7 +29,7 @@ faa_pairs = [
     }
 ]
 
-# Sample Military phrase pairs
+# === Built-in Military phrase pairs ===
 military_pairs = [
     {
         "pilot": "Request departure on runway one six",
@@ -33,98 +41,90 @@ military_pairs = [
     }
 ]
 
-# Fallback for custom or mixed sessions
-mixed_pairs = faa_pairs + military_pairs
-
-# === Text-to-Speech: Speak pilot phrase aloud ===
-def speak(text):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 175)   # Adjust speaking speed
-    engine.setProperty('volume', 1.0) # Max volume
-    engine.say(text)
-    engine.runAndWait()
-
-# === Main ATC Call-and-Response Simulation ===
+# === Entry point for running the session ===
 def run_call_and_response_session(config):
     print("\n--- ATC Call-and-Response Session ---")
 
-    # Select phrase pool based on session mode
+    # Choose base phrase pool
     if config["mode"] == "FAA":
-        phrase_pairs = faa_pairs
+        phrase_pairs = faa_pairs.copy()
     elif config["mode"] == "Military":
-        phrase_pairs = military_pairs
+        phrase_pairs = military_pairs.copy()
     else:
-        phrase_pairs = mixed_pairs
+        phrase_pairs = faa_pairs + military_pairs
 
-    num_rounds = 3  # You can make this dynamic later
-    correct_responses = 0
-    total_score = 0
+    # Optional: Add custom phrase pair from user input
+    print("\nWould you like to add a custom pilot/controller phrase pair? (y/n)")
+    if input("> ").strip().lower() == 'y':
+        print("\n✍ Enter the simulated pilot's phrase (what the system will say):")
+        pilot_input = input("> ").strip()
 
-    # Create logs folder if not present
+        print("✍ Enter the expected correct controller response:")
+        controller_input = input("> ").strip()
+
+        phrase_pairs.append({
+            "pilot": pilot_input,
+            "expected_controller": controller_input
+        })
+
+        print("✅ Custom phrase added successfully.\n")
+
+    # Prepare session log
     if not os.path.exists("logs"):
         os.makedirs("logs")
 
-    # Create a timestamped log file
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     log_file = f"logs/session_log_{timestamp}.csv"
 
-    # Write CSV header row
     with open(log_file, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Round", "Pilot Phrase", "User Response", "Matched As", "Score"])
+        writer.writerow(["Timestamp", "Pilot Phrase", "User Response", "Matched As", "Score"])
 
-    # === Run multi-round simulation ===
-    for round_num in range(1, num_rounds + 1):
-        print(f"\n📟 ROUND {round_num} / {num_rounds}")
+    print("🎙️ Beginning session. Type 'exit' when you're ready to stop.\n")
 
-        # Select random phrase pair for this round
+    # === Continuous session loop ===
+    while True:
         selected_pair = random.choice(phrase_pairs)
         pilot_phrase = selected_pair["pilot"]
         expected_response = selected_pair["expected_controller"]
 
-        # Print and speak pilot phrase
         print(f"\n🛩️ Pilot says: \"{pilot_phrase}\"")
         speak(pilot_phrase)
 
-        # Record and transcribe user's response
         record_audio()
         user_transcript = transcribe_audio()
         print(f"\n🎧 You said: \"{user_transcript}\"")
 
-        # Match user response to expected phrase
+        # Exit condition
+        if user_transcript.strip().lower() == "exit":
+            print("\n🛑 Ending session...")
+            break
+
         matched, score = match_phrase(user_transcript, cowboy_mode=config["cowboy_mode"])
-        total_score += score
 
         print(f"\nExpected Response: \"{expected_response}\"")
         print(f"AI Best Match: \"{matched}\" (Score: {score})")
 
-        # Give live feedback (if enabled)
         if config["live_feedback"]:
             if score >= 90:
                 print("✅ Perfect response!")
-                correct_responses += 1
             elif score >= 70:
                 print("⚠ Close, but not exact.")
             else:
                 print("❌ Not a recognized ATC response. Try again.")
 
-        # Append round results to log file
+        # Log result
         with open(log_file, mode='a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow([
-                round_num,
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 pilot_phrase,
                 user_transcript,
                 matched,
                 score
             ])
 
-        input("\n[Press Enter to continue to next round]")
+        input("\n[Press Enter to continue]")
 
-    # === Final session summary ===
-    avg_score = total_score / num_rounds
-    print("\n=== Session Complete ===")
-    print(f"✅ Correct Responses: {correct_responses}/{num_rounds}")
-    print(f"📊 Average Match Score: {avg_score:.2f}%")
-    print(f"📁 Session log saved to: {log_file}")
-    input("\n[Press Enter to return to the main menu]")
+    print(f"\n📁 Session log saved to: {log_file}")
+    input("[Press Enter to return to the main menu]")
