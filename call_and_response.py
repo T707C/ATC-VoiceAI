@@ -3,7 +3,8 @@ import csv
 import datetime
 import os
 import pyttsx3
-from session_runner import record_audio, transcribe_audio, match_phrase
+from session_utils import record_audio, transcribe_audio, match_phrase
+
 
 # === Text-to-Speech: Speaks a line aloud ===
 def speak(text):
