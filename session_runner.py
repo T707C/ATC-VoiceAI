@@ -1,11 +1,11 @@
+from call_and_response import run_call_and_response_session
 import whisper
 import sounddevice as sd
 from scipy.io.wavfile import write
 from rapidfuzz import fuzz
-import os
 from phrase_library import standard_phrases, cowboy_variants
 
-# Record user's voice to file
+# === Record user's voice ===
 def record_audio(filename="recorded.wav", duration=5):
     print("\nRecording... Speak now!")
     recording = sd.rec(int(duration * 44100), samplerate=44100, channels=1, dtype='int16')
@@ -13,13 +13,13 @@ def record_audio(filename="recorded.wav", duration=5):
     write(filename, 44100, recording)
     print("Recording saved.")
 
-# Transcribe audio file using Whisper
+# === Transcribe audio using Whisper ===
 def transcribe_audio(filename="recorded.wav"):
     model = whisper.load_model("base")
     result = model.transcribe(filename)
     return result["text"]
 
-# Match transcript to expected ATC phrase or variant
+# === Match user response to phrase library ===
 def match_phrase(transcript, cowboy_mode=False):
     best_match = None
     highest_score = 0
@@ -38,8 +38,6 @@ def match_phrase(transcript, cowboy_mode=False):
 
     return best_match, highest_score
 
-# Run the full session (call-and-response core)
-from call_and_response import run_call_and_response_session
-
-def run_session(config):
-    run_call_and_response_session(config)
+# === Launch full call-and-response simulation ===
+def run_session(config, custom_phrase_pairs):
+    run_call_and_response_session(config, custom_phrase_pairs)

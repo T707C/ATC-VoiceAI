@@ -1,15 +1,15 @@
-# menu.py
-import time
 from session_runner import run_session
-from call_and_response import run_call_and_response_session
 
-
+# Session settings
 session_config = {
     "mode": "FAA",
     "cowboy_mode": False,
     "phrase_matching": True,
     "live_feedback": True
 }
+
+# Store custom phrase pairs entered through options menu
+custom_phrase_pairs = []
 
 def main_menu():
     while True:
@@ -33,26 +33,20 @@ def new_session():
     print("\n--- Select Training Mode ---")
     print("[1] FAA")
     print("[2] Military")
-    print("[3] University")
-    print("[4] Custom")
+    print("[3] University/Custom")
     mode_choice = input("> ")
 
     mode_map = {
         '1': "FAA",
         '2': "Military",
-        '3': "University",
-        '4': "Custom"
+        '3': "Custom"
     }
 
     session_config["mode"] = mode_map.get(mode_choice, "FAA")
     print(f"\nTraining Mode set to: {session_config['mode']}")
     print("Launching session...\n")
 
-    # Placeholder for your future session logic
-    time.sleep(1)
-    run_session(session_config)
-    for key, value in session_config.items():
-        print(f" - {key}: {value}")
+    run_session(session_config, custom_phrase_pairs)
 
 def options_menu():
     while True:
@@ -89,3 +83,6 @@ def options_menu():
             break
         else:
             print("Invalid option. Try again.")
+
+if __name__ == "__main__":
+    main_menu()
