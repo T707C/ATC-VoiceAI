@@ -2,6 +2,8 @@ from phrasebook import faa_phrases, cowboy_phrases
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 from phrasebook import faa_phrases, cowboy_phrases
+from training_session_gui import TrainingSessionWindow
+from log_viewer import LogViewerWindow
 
 
 class PhrasebookWindow(tk.Toplevel):
@@ -55,3 +57,50 @@ class PhrasebookWindow(tk.Toplevel):
 
         self.results_box.tag_config("section", foreground="#00ccff", font=("Helvetica", 12, "bold"))
         self.results_box.config(state="disabled")
+
+
+class ATCVoiceTrainerApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("ATC Voice AI Trainer")
+        self.geometry("600x460")
+        self.configure(bg="#1a1a1a")
+        self.create_widgets()
+
+    def create_widgets(self):
+        title = tk.Label(self, text="ATC Voice AI Trainer", font=("Helvetica", 24, "bold"), fg="#00ffcc", bg="#1a1a1a")
+        title.pack(pady=30)
+
+        button_style = {
+            "font": ("Helvetica", 14),
+            "width": 30,
+            "bg": "#262626",
+            "fg": "#ffffff",
+            "activebackground": "#00cc99",
+            "activeforeground": "#ffffff",
+            "bd": 0,
+            "highlightthickness": 0
+    }
+
+        tk.Button(self, text="Start Training Session", command=self.start_session, **button_style).pack(pady=10)
+        tk.Button(self, text="Options", command=self.open_options, **button_style).pack(pady=10)
+        tk.Button(self, text="View Phrasebook", command=self.view_phrasebook, **button_style).pack(pady=10)
+        tk.Button(self, text="Replay Previous Sessions", command=self.view_logs, **button_style).pack(pady=10)
+        tk.Button(self, text="Exit", command=self.quit, **button_style).pack(pady=20)
+
+    def start_session(self):
+            TrainingSessionWindow(self, {}, [])
+
+    def open_options(self):
+        messagebox.showinfo("Options", "Options window goes here.")
+
+    def view_phrasebook(self):
+        PhrasebookWindow(self)
+
+    def view_logs(self):
+        LogViewerWindow(self)
+
+
+if __name__ == "__main__":
+    app = ATCVoiceTrainerApp()
+    app.mainloop()
