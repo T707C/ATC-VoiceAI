@@ -119,7 +119,7 @@ class TrainingSessionWindow(tk.Toplevel):
                 return
             self.round_data = self.phrase_pool[self.sequence_index]
 
-        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=True)
+        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=False)
         self.run_button.config(state="normal")
 
     def run_round(self):
@@ -146,7 +146,8 @@ class TrainingSessionWindow(tk.Toplevel):
         self.chat_display.config(state="normal")
         if clear:
             self.chat_display.delete(1.0, tk.END)
-        self.chat_display.insert(tk.END, f"{text}\n\n")
+        timestamp = datetime.datetime.now().strftime("[%H:%M:%S]")
+        self.chat_display.insert(tk.END, f"{timestamp}{text}\n\n")
         self.chat_display.see(tk.END)
         self.chat_display.config(state="disabled")
 
