@@ -125,7 +125,7 @@ class TrainingSessionWindow(tk.Toplevel):
                 return
             self.round_data = self.phrase_pool[self.sequence_index]
 
-        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=False)
+        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", tag = "pilot")
         self.run_button.config(state="normal")
 
     def run_round(self):
@@ -136,9 +136,9 @@ class TrainingSessionWindow(tk.Toplevel):
         transcript = transcribe_audio()
         matched, score = match_phrase(transcript, cowboy_mode=self.config_data.get("cowboy_mode", False))
 
-        self.append_chat(f"🎧 YOU: {transcript}")
-        self.append_chat(f"✅ MATCH: {matched}")
-        self.append_chat(f"🧠 SCORE: {score}%\n" + "-" * 50)
+        self.append_chat(f"🎧 YOU: {transcript}", tag = "user")
+        self.append_chat(f"✅ MATCH: {matched}", tag = "match")
+        self.append_chat(f"🧠 SCORE: {score}%\n" + "-" * 50, tag = "score")
 
         with open(self.log_file, "a") as f:
             f.write(f"{datetime.datetime.now()},{self.round_data['pilot']},{transcript},{matched},{score}\n")
@@ -153,7 +153,11 @@ class TrainingSessionWindow(tk.Toplevel):
         if clear:
             self.chat_display.delete(1.0, tk.END)
         timestamp = datetime.datetime.now().strftime("[%H:%M:%S]")
-        self.chat_display.insert(tk.END, f"{timestamp}{text}\n\n")
+        if tag:
+            self.chat_display.insert(tk.END, timestamp, "system")
+            self.chat_display.insert(tk.END, f"{text}\n\n", tag)
+        else:
+            self.chat_display.insert(tk.END, f"{timestamp}{text}\n\n")
         self.chat_display.see(tk.END)
         self.chat_display.config(state="disabled")
 
