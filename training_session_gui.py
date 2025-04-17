@@ -55,6 +55,12 @@ class TrainingSessionWindow(tk.Toplevel):
         self.chat_display.pack(padx=20, pady=10, fill="both", expand=True)
         self.chat_display.config(state="disabled")
 
+        self.chat_display.tag_config("pilot", foreground="#00ccff", font=("Helvetica", 12, "bold"))
+        self.chat_display.tag_config("user", foreground="#ffffff", font=("Helvetica", 12))
+        self.chat_display.tag_config("match", foreground="#66ff66", font=("Helvetica", 12, "italic"))
+        self.chat_display.tag_config("score", foreground="#ffcc00", font=("Helvetica", 12))
+        self.chat_display.tag_config("system", foreground="#888888", font=("Helvetica", 11, "italic"))
+
         self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round, font=("Helvetica", 13),
                                     bg="#00cc99", fg="black", width=12, state="disabled")
         self.run_button.pack(pady=5)
