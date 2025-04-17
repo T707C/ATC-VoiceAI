@@ -55,6 +55,8 @@ class TrainingSessionWindow(tk.Toplevel):
         self.chat_display.pack(padx=20, pady=10, fill="both", expand=True)
         self.chat_display.config(state="disabled")
 
+
+
         self.chat_display.tag_config("pilot", foreground="#00ccff", font=("Helvetica", 12, "bold"))
         self.chat_display.tag_config("user", foreground="#ffffff", font=("Helvetica", 12))
         self.chat_display.tag_config("match", foreground="#66ff66", font=("Helvetica", 12, "italic"))
@@ -148,7 +150,7 @@ class TrainingSessionWindow(tk.Toplevel):
 
         self.after(500, self.prepare_round)
 
-    def append_chat(self, text, clear=False):
+    def append_chat(self, text, tag=None, clear=False):
         self.chat_display.config(state="normal")
         if clear:
             self.chat_display.delete(1.0, tk.END)
