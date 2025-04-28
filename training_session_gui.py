@@ -47,12 +47,29 @@ class TrainingSessionWindow(tk.Toplevel):
         self.select_mode()
 
     def create_widgets(self):
-        self.chat_display = tk.Text(self, wrap="word", font=("Helvetica", 12), bg="#262626", fg="white")
-        self.chat_display.pack(padx=20, pady=10, fill="both", expand=True)
+        text_frame = tk.Frame(self, bg="#1a1a1a")
+        text_frame.pack(padx=20, pady=10, fill="both", expand=True)
+
+        self.chat_display = tk.Text(
+            text_frame,
+            wrap="word",
+            font=("Helvetica", 12),
+            bg="#262626",
+            fg="white",
+            yscrollcommand=lambda *args: scrollbar.set(*args)
+        )
+        
+        self.chat_display.pack(side="left", fill="both", expand=True)
         self.chat_display.config(state="disabled")
 
-        self.recording_label = tk.Label(self, text="", font=("Helvetica", 12, "bold"), fg="#00ffcc", bg="#1a1a1a")
-        self.recording_label.pack()
+        scrollbar = tk.Scrollbar(text_frame, orient="vertical", command=self.chat_display.yview)
+        scrollbar.pack(side="right", fill="y")
+
+        self.chat_display.tag_config("pilot", foreground="#00ccff", font=("Helvetica", 12, "bold"))
+        self.chat_display.tag_config("user", foreground="#ffffff", font=("Helvetica", 12))
+        self.chat_display.tag_config("match", foreground="#66ff66", font=("Helvetica", 12, "italic"))
+        self.chat_display.tag_config("score", foreground="#ffcc00", font=("Helvetica", 12))
+        self.chat_display.tag_config("system", foreground="#888888", font=("Helvetica", 11, "italic"))
 
         self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round, font=("Helvetica", 13),
                                     bg="#00cc99", fg="black", width=12, state="disabled")
