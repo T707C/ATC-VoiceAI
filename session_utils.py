@@ -1,38 +1,61 @@
-import whisper
+# session_utils.py
+
 import sounddevice as sd
-from scipy.io.wavfile import write
+import numpy as np
+import whisper
+import os
+import tempfile
+import scipy.io.wavfile as wav
 from rapidfuzz import fuzz
-from phrase_library import standard_phrases, cowboy_variants
+import tkinter as tk
+from tkinter import messagebox
 
-# === Record user's voice ===
-def record_audio(filename="recorded.wav", duration=5):
-    print("\nRecording... Speak now!")
-    recording = sd.rec(int(duration * 44100), samplerate=44100, channels=1, dtype='int16')
+# Load Whisper Model (once)
+model = whisper.load_model("base")
+
+def record_audio(duration=5, sample_rate=16000):
+    print("Recording...")
+    recording = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1, dtype='float32')
     sd.wait()
-    write(filename, 44100, recording)
-    print("Recording saved.")
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    wav.write(temp_file.name, sample_rate, recording)
+    return temp_file.name
 
-# === Transcribe audio using Whisper ===
-def transcribe_audio(filename="recorded.wav"):
-    model = whisper.load_model("base")
+def transcribe_audio(filename):
+    print("Transcribing...")
     result = model.transcribe(filename)
     return result["text"]
 
-# === Match user response to phrase library ===
 def match_phrase(transcript, cowboy_mode=False):
+    from phrasebook import faa_phrases
+
     best_match = None
-    highest_score = 0
+    best_score = -1
 
-    all_phrases = standard_phrases.copy()
-    if cowboy_mode:
-        for phrase, variants in cowboy_variants.items():
-            all_phrases[phrase] += variants
+    for call, data in faa_phrases.items():
+        score = fuzz.ratio(transcript.lower(), call.lower())
+        if score > best_score:
+            best_match = call
+            best_score = score
 
-    for standard, variants in all_phrases.items():
-        for test_phrase in [standard] + variants:
-            score = fuzz.ratio(transcript.lower(), test_phrase.lower())
-            if score > highest_score:
-                highest_score = score
-                best_match = standard
+    expected = faa_phrases.get(best_match, {}).get("expected_response", "")
 
-    return best_match, highest_score
+    # Accent-friendly: lower threshold
+    threshold = 70
+
+    if best_score >= threshold:
+        return expected, best_score
+    else:
+        # Low score: ask human trainer for decision
+        root = tk.Tk()
+        root.withdraw()
+        response = messagebox.askyesno(
+            "Low Match Score",
+            f"Match score is {best_score}%.\nAccept this response?"
+        )
+        root.destroy()
+
+        if response:
+            return expected, best_score
+        else:
+            return "Unmatched/Incorrect", best_score

@@ -23,6 +23,7 @@ faa_phrases = {
     }
 }
 
+'''
 cowboy_phrases = {
     "Triple Nickel": {
         "expected_response": "Five five five",
@@ -44,4 +45,5 @@ cowboy_phrases = {
         "expected_response": "Visibility is low",
         "definition": "Shortened slang for visibility, common on informal channels."
     }
-}
+    '''
+

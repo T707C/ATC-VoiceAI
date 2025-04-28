@@ -1,3 +1,5 @@
+# training_session_gui.py
+
 import tkinter as tk
 from tkinter import messagebox
 import random
@@ -13,19 +15,14 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 
-# === Phrase Sets ===
-faa_pairs = [
-    {"pilot": "Request taxi to runway two seven", "expected_controller": "Taxi to runway two seven via Alpha, Bravo"},
-    {"pilot": "Ready for departure runway one eight", "expected_controller": "Cleared for takeoff runway one eight"},
-    {"pilot": "Inbound for landing, three mile final", "expected_controller": "Cleared to land runway two seven"},
-    {"pilot": "Holding short of runway one six", "expected_controller": "Hold short of runway one six"},
-    {"pilot": "Request cross runway two seven", "expected_controller": "Cross runway two seven and contact ground on point eight"}
-]
-
-military_pairs = [
-    {"pilot": "Approach, three in the green", "expected_controller": "Cleared to land runway one six"},
-    {"pilot": "Ready for departure, IFR clearance received", "expected_controller": "Cleared for takeoff runway one eight, maintain runway heading"}
-]
+# FAA Phrases (import inside instead of phrasebook.py to stay modular)
+faa_phrases = {
+    "Request taxi to runway two seven": {"expected_controller": "Taxi to runway two seven via Alpha, Bravo"},
+    "Ready for departure runway one eight": {"expected_controller": "Cleared for takeoff runway one eight"},
+    "Inbound for landing, three mile final": {"expected_controller": "Cleared to land runway two seven"},
+    "Holding short of runway one six": {"expected_controller": "Hold short of runway one six"},
+    "Request cross runway two seven": {"expected_controller": "Cross runway two seven and contact ground on point eight"}
+}
 
 flight_sequence = [
     {"pilot": "Ground, this is Tiger 5 requesting radio check", "expected_controller": "Tiger 5, radio check loud and clear"},
@@ -35,7 +32,6 @@ flight_sequence = [
     {"pilot": "Inbound for landing, three mile final", "expected_controller": "Cleared to land runway two seven"}
 ]
 
-# === GUI Session Class ===
 class TrainingSessionWindow(tk.Toplevel):
     def __init__(self, parent, config, custom_phrases):
         super().__init__(parent)
@@ -55,13 +51,8 @@ class TrainingSessionWindow(tk.Toplevel):
         self.chat_display.pack(padx=20, pady=10, fill="both", expand=True)
         self.chat_display.config(state="disabled")
 
-
-
-        self.chat_display.tag_config("pilot", foreground="#00ccff", font=("Helvetica", 12, "bold"))
-        self.chat_display.tag_config("user", foreground="#ffffff", font=("Helvetica", 12))
-        self.chat_display.tag_config("match", foreground="#66ff66", font=("Helvetica", 12, "italic"))
-        self.chat_display.tag_config("score", foreground="#ffcc00", font=("Helvetica", 12))
-        self.chat_display.tag_config("system", foreground="#888888", font=("Helvetica", 11, "italic"))
+        self.recording_label = tk.Label(self, text="", font=("Helvetica", 12, "bold"), fg="#00ffcc", bg="#1a1a1a")
+        self.recording_label.pack()
 
         self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round, font=("Helvetica", 13),
                                     bg="#00cc99", fg="black", width=12, state="disabled")
@@ -107,14 +98,7 @@ class TrainingSessionWindow(tk.Toplevel):
         self.prepare_round()
 
     def load_phrase_pool(self):
-        mode = self.config_data.get("mode", "FAA")
-        base_pool = []
-        if mode == "FAA":
-            base_pool = faa_pairs
-        elif mode == "Military":
-            base_pool = military_pairs
-        else:
-            base_pool = faa_pairs + military_pairs
+        base_pool = [{"pilot": call, "expected_controller": data["expected_response"]} for call, data in faa_phrases.items()]
         return base_pool + self.custom_phrases
 
     def prepare_round(self):
@@ -127,20 +111,24 @@ class TrainingSessionWindow(tk.Toplevel):
                 return
             self.round_data = self.phrase_pool[self.sequence_index]
 
-        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", tag = "pilot")
+        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=True)
         self.run_button.config(state="normal")
 
     def run_round(self):
         self.run_button.config(state="disabled")
         speak(self.round_data["pilot"])
 
-        record_audio()
-        transcript = transcribe_audio()
-        matched, score = match_phrase(transcript, cowboy_mode=self.config_data.get("cowboy_mode", False))
+        self.recording_label.config(text="🎙️ Recording...")
+        self.update()
+        filename = record_audio()
+        self.recording_label.config(text="")  # clear after recording
 
-        self.append_chat(f"🎧 YOU: {transcript}", tag = "user")
-        self.append_chat(f"✅ MATCH: {matched}", tag = "match")
-        self.append_chat(f"🧠 SCORE: {score}%\n" + "-" * 50, tag = "score")
+        transcript = transcribe_audio(filename)
+        matched, score = match_phrase(transcript)
+
+        self.append_chat(f"🎧 YOU: {transcript}")
+        self.append_chat(f"✅ MATCH: {matched}")
+        self.append_chat(f"🧠 SCORE: {score}%\n" + "-" * 50)
 
         with open(self.log_file, "a") as f:
             f.write(f"{datetime.datetime.now()},{self.round_data['pilot']},{transcript},{matched},{score}\n")
@@ -150,16 +138,11 @@ class TrainingSessionWindow(tk.Toplevel):
 
         self.after(500, self.prepare_round)
 
-    def append_chat(self, text, tag=None, clear=False):
+    def append_chat(self, text, clear=False):
         self.chat_display.config(state="normal")
         if clear:
             self.chat_display.delete(1.0, tk.END)
-        timestamp = datetime.datetime.now().strftime("[%H:%M:%S]")
-        if tag:
-            self.chat_display.insert(tk.END, timestamp, "system")
-            self.chat_display.insert(tk.END, f"{text}\n\n", tag)
-        else:
-            self.chat_display.insert(tk.END, f"{timestamp}{text}\n\n")
+        self.chat_display.insert(tk.END, f"{text}\n\n")
         self.chat_display.see(tk.END)
         self.chat_display.config(state="disabled")
 
