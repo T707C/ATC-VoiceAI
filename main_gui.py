@@ -1,7 +1,7 @@
-from phrasebook import faa_phrases, cowboy_phrases
+from phrasebook import faa_phrases
 import tkinter as tk
 from tkinter import messagebox, simpledialog
-from phrasebook import faa_phrases, cowboy_phrases
+from phrasebook import faa_phrases
 from training_session_gui import TrainingSessionWindow
 from log_viewer import LogViewerWindow
 
