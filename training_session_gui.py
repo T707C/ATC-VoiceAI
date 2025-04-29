@@ -71,6 +71,9 @@ class TrainingSessionWindow(tk.Toplevel):
         self.chat_display.tag_config("score", foreground="#ffcc00", font=("Helvetica", 12))
         self.chat_display.tag_config("system", foreground="#888888", font=("Helvetica", 11, "italic"))
 
+        self.recording_label = tk.Label(self, text="", font=("Helvetica", 12, "bold"), fg="#00ffcc", bg="#1a1a1a")
+        self.recording_label.pack()
+
         self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round, font=("Helvetica", 13),
                                     bg="#00cc99", fg="black", width=12, state="disabled")
         self.run_button.pack(pady=5)
@@ -115,8 +118,10 @@ class TrainingSessionWindow(tk.Toplevel):
         self.prepare_round()
 
     def load_phrase_pool(self):
+        from phrasebook import faa_phrases
         base_pool = [{"pilot": call, "expected_controller": data["expected_response"]} for call, data in faa_phrases.items()]
         return base_pool + self.custom_phrases
+
 
     def prepare_round(self):
         if self.training_mode == "rapid":

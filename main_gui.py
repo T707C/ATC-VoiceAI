@@ -40,23 +40,21 @@ class PhrasebookWindow(tk.Toplevel):
         self.results_box.config(state="normal")
         self.results_box.delete(1.0, tk.END)
 
-        def show_section(title, data_dict):
-            self.results_box.insert(tk.END, f"\n🔷 {title}\n", "section")
-            found = False
-            for call, data in data_dict.items():
-                if query in call.lower():
-                    found = True
-                    response = data.get("expected_response", "N/A")
-                    definition = data.get("definition", "No description available.")
-                    self.results_box.insert(tk.END, f"\n🛩️ Pilot: {call}\n🎧 ATC: {response}\n📘 Meaning: {definition}\n")
-            if not found:
-                self.results_box.insert(tk.END, "\n⚠ No matching phrase found in this section.\n")
+        found = False
+        self.results_box.insert(tk.END, f"\n🔷 FAA Phraseology\n", "section")
+        for call, data in faa_phrases.items():
+            if query in call.lower():
+                found = True
+                response = data.get("expected_response", "N/A")
+                definition = data.get("definition", "No description available.")
+                self.results_box.insert(tk.END, f"\n🛩️ Pilot: {call}\n🎧 ATC: {response}\n📘 Meaning: {definition}\n")
 
-        show_section("FAA Phraseology", faa_phrases)
-        show_section("Cowboy Phraseology", cowboy_phrases)
+        if not found:
+         self.results_box.insert(tk.END, "\n⚠ No matching FAA phrase found.\n")
 
         self.results_box.tag_config("section", foreground="#00ccff", font=("Helvetica", 12, "bold"))
         self.results_box.config(state="disabled")
+
 
 
 class ATCVoiceTrainerApp(tk.Tk):
