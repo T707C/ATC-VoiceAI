@@ -38,7 +38,7 @@ def main_menu():
         print("[1] Start New Session")
         print("[2] Options")
         print("[3] Exit")
-        print("[6] View Phrasebook")  # <-- New Option
+        print("[4] View Phrasebook")  # <-- New Option
 
         choice = input("> ")
 
@@ -49,7 +49,7 @@ def main_menu():
         elif choice == '3':
             print("Goodbye!")
             break
-        elif choice == '6':
+        elif choice == '4':
             view_phrasebook()
         else:
             print("Invalid option. Try again.")
@@ -78,10 +78,10 @@ def new_session():
 def options_menu():
     while True:
         print("\n--- Options ---")
-        print(f"[2] Phrase Matching: {'On' if session_config['phrase_matching'] else 'Off'}")
-        print(f"[3] Live Feedback: {'On' if session_config['live_feedback'] else 'Off'}")
-        print(f"[4] Add Custom Phrase Pair")
-        print("[5] Back to Main Menu")
+        print(f"[1] Phrase Matching: {'On' if session_config['phrase_matching'] else 'Off'}")
+        print(f"[2] Live Feedback: {'On' if session_config['live_feedback'] else 'Off'}")
+        print(f"[3] Add Custom Phrase Pair")
+        print("[4] Back to Main Menu")
 
         opt = input("> ")
 
@@ -103,7 +103,7 @@ def options_menu():
                 print("✅ Custom phrase pair added successfully.")
             else:
                 print("⚠ Both fields must be filled. Phrase not saved.")
-        elif opt == '5':
+        elif opt == '4':
             break
         else:
             print("Invalid option. Try again.")

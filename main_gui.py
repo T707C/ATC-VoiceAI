@@ -87,10 +87,10 @@ class ATCVoiceTrainerApp(tk.Tk):
         tk.Button(self, text="Exit", command=self.quit, **button_style).pack(pady=20)
 
     def start_session(self):
-            TrainingSessionWindow(self, {}, [])
+        TrainingSessionWindow(self, {}, [])
 
     def open_options(self):
-        messagebox.showinfo("Options", "Options window goes here.")
+        OptionsWindow(self)
 
     def view_phrasebook(self):
         PhrasebookWindow(self)
@@ -98,6 +98,35 @@ class ATCVoiceTrainerApp(tk.Tk):
     def view_logs(self):
         LogViewerWindow(self)
 
+class OptionsWindow(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Options")
+        self.geometry("400x300")
+        self.configure(bg="#1a1a1a")
+
+        tk.Label(self, text="Options", font=("Helvetica", 20, "bold"), fg="#00ffcc", bg="#1a1a1a").pack(pady=20)
+
+        #Save Button
+        save_button = tk.Button(
+            self,
+            text="Save Options",
+            font=("Helvetica", 14),
+            bg="#262626",
+            fg="#ffffff",
+            activebackground="#00cc99",
+            activeforeground="#ffffff",
+            bd=0,
+            highlightthickness=0,
+            command=self.save_options
+        )
+        save_button.pack(pady=20)
+
+    def save_options(self):
+        cowboy_mode_enabled = self.cowboy_mode_var.get()
+        print(f"Cowboy Mode Enabled: {cowboy_mode_enabled}")
+        messagebox.showinfo("Options Saved", "Your options have been saved!")
+        self.destroy()
 
 if __name__ == "__main__":
     app = ATCVoiceTrainerApp()
