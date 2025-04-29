@@ -38,7 +38,7 @@ def normalize_transcript(text):
     normalized = [num_map.get(word, word) for word in words]
     return " ".join(normalized)
 
-def match_phrase(transcript, cowboy_mode=False):
+def match_phrase(transcript, parent = None, cowboy_mode=False):
     from phrasebook import faa_phrases
 
     normalized_transcript = normalize_transcript(transcript)
@@ -57,13 +57,17 @@ def match_phrase(transcript, cowboy_mode=False):
     if best_score >= 70:
         return expected, best_score
     else:
-        root = tk.Tk()
-        root.withdraw()
-        response = messagebox.askyesno(
-            "Low Match Score",
-            f"Match score is {best_score}%.\nAccept this response?"
-        )
-        root.destroy()
+        if parent is not None:
+            response = messagebox.askyesno(
+                "Low Match Score",
+                f"Match score is {best_score}%.\nAccept this response?",
+                parent=parent
+            )
+        else:
+            response = messagebox.askyesno(
+                "Low Match Score",
+                f"Match score is {best_score}%.\nAccept this response?"
+            )
 
         if response:
             return expected, best_score

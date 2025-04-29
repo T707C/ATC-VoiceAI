@@ -139,12 +139,17 @@ class TrainingSessionWindow(tk.Toplevel):
         speak(self.round_data["pilot"])
 
         self.recording_label.config(text="🎙️ Recording...")
-        self.update()
+        self.recording_label.update_idletasks()
         filename = record_audio()
         self.recording_label.config(text="")  # clear after recording
+        
+        # making sure training windows stays on top
+        self.lift()
+        self.attributes('-topmost', True)
+        self.attributes('-topmost', False)
 
         transcript = transcribe_audio(filename)
-        matched, score = match_phrase(transcript)
+        matched, score = match_phrase(transcript, parent=self)
 
         self.append_chat(f"🎧 YOU: {transcript}")
         self.append_chat(f"✅ MATCH: {matched}")
