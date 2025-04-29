@@ -127,7 +127,7 @@ class TrainingSessionWindow(tk.Toplevel):
                 return
             self.round_data = self.phrase_pool[self.sequence_index]
 
-        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=True)
+        self.append_chat(f"🛩️ PILOT: {self.round_data['pilot']}\n\n(Press ▶️ Run when ready)", clear=False)
         self.run_button.config(state="normal")
 
     def run_round(self):
