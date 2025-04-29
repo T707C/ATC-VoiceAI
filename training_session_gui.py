@@ -43,8 +43,10 @@ class TrainingSessionWindow(tk.Toplevel):
         self.custom_phrases = custom_phrases
         self.log_file = self.create_log_file()
 
+        self.withdraw()  # Hide the Training Session window initially
+        self.select_mode()  # Open the mode selection window
+
         self.create_widgets()
-        self.select_mode()
 
     def create_widgets(self):
     # Main container
@@ -101,12 +103,14 @@ class TrainingSessionWindow(tk.Toplevel):
     def start_rapid_mode(self):
         self.training_mode = "rapid"
         self.mode_window.destroy()
+        self.deiconify()  # Show the main window
         self.phrase_pool = self.load_phrase_pool()
         self.prepare_round()
 
     def start_flight_mode(self):
         self.training_mode = "flight"
         self.mode_window.destroy()
+        self.deiconify()  # Show the main window
         self.sequence_index = 0
         self.phrase_pool = flight_sequence
         self.prepare_round()

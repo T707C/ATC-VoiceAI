@@ -1,5 +1,5 @@
 from session_runner import run_session
-from phrasebook import phrasebook  # ← Phrasebook import
+import phrasebook  # ← Phrasebook import
 
 # Session settings
 session_config = {
