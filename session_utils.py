@@ -38,7 +38,7 @@ def normalize_transcript(text):
     normalized = [num_map.get(word, word) for word in words]
     return " ".join(normalized)
 
-def match_phrase(transcript, parent = None, cowboy_mode=False):
+def match_phrase(transcript, parent = None):
     from phrasebook import faa_phrases
 
     normalized_transcript = normalize_transcript(transcript)

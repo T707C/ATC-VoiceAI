@@ -22,28 +22,3 @@ faa_phrases = {
         "definition": "Pilot needs clearance to cross runway. ATC authorizes and gives new frequency."
     }
 }
-
-'''
-cowboy_phrases = {
-    "Triple Nickel": {
-        "expected_response": "Five five five",
-        "definition": "Call sign slang for 555, used casually in some military contexts."
-    },
-    "Three in the green": {
-        "expected_response": "Wheels down and locked",
-        "definition": "Informal confirmation that landing gear is fully deployed."
-    },
-    "Three with the gear": {
-        "expected_response": "Report three mile final, wheels down and locked",
-        "definition": "Colloquial way of confirming final approach with gear down."
-    },
-    "Lima Charlie": {
-        "expected_response": "Loud and clear",
-        "definition": "NATO radio check phrase indicating strong communication signal."
-    },
-    "Vis is low": {
-        "expected_response": "Visibility is low",
-        "definition": "Shortened slang for visibility, common on informal channels."
-    }
-    '''
-

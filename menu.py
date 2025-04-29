@@ -4,7 +4,6 @@ import phrasebook  # ← Phrasebook import
 # Session settings
 session_config = {
     "mode": "FAA",
-    "cowboy_mode": False,
     "phrase_matching": True,
     "live_feedback": True
 }
@@ -79,7 +78,6 @@ def new_session():
 def options_menu():
     while True:
         print("\n--- Options ---")
-        print(f"[1] Cowboy Mode: {'On' if session_config['cowboy_mode'] else 'Off'}")
         print(f"[2] Phrase Matching: {'On' if session_config['phrase_matching'] else 'Off'}")
         print(f"[3] Live Feedback: {'On' if session_config['live_feedback'] else 'Off'}")
         print(f"[4] Add Custom Phrase Pair")
@@ -88,12 +86,10 @@ def options_menu():
         opt = input("> ")
 
         if opt == '1':
-            session_config['cowboy_mode'] = not session_config['cowboy_mode']
-        elif opt == '2':
             session_config['phrase_matching'] = not session_config['phrase_matching']
-        elif opt == '3':
+        elif opt == '2':
             session_config['live_feedback'] = not session_config['live_feedback']
-        elif opt == '4':
+        elif opt == '3':
             print("\n✍ Enter the pilot's spoken phrase:")
             pilot = input("> ").strip()
             print("✍ Enter the expected ATC controller response:")

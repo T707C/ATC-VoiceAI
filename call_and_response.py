@@ -88,7 +88,7 @@ def run_call_and_response_session(config, custom_phrase_pairs=[]):
             print("\n🛑 Ending session...")
             break
 
-        matched, score = match_phrase(user_transcript, cowboy_mode=config["cowboy_mode"])
+        matched, score = match_phrase(user_transcript)
 
         print(f"\nExpected Response: \"{expected_response}\"")
         print(f"AI Best Match: \"{matched}\" (Score: {score})")
