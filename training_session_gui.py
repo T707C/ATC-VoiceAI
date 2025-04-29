@@ -47,39 +47,33 @@ class TrainingSessionWindow(tk.Toplevel):
         self.select_mode()
 
     def create_widgets(self):
-        text_frame = tk.Frame(self, bg="#1a1a1a")
-        text_frame.pack(padx=20, pady=10, fill="both", expand=True)
+    # Main container
+        main_frame = tk.Frame(self, bg="#1a1a1a")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
-        self.chat_display = tk.Text(
-            text_frame,
-            wrap="word",
-            font=("Helvetica", 12),
-            bg="#262626",
-            fg="white",
-            yscrollcommand=lambda *args: scrollbar.set(*args)
-        )
-        
+     # Scrollable chat box
+        self.chat_display = tk.Text(main_frame, wrap="word", font=("Helvetica", 12),
+                                bg="#262626", fg="white", height=20)
         self.chat_display.pack(side="left", fill="both", expand=True)
-        self.chat_display.config(state="disabled")
 
-        scrollbar = tk.Scrollbar(text_frame, orient="vertical", command=self.chat_display.yview)
+        scrollbar = tk.Scrollbar(main_frame, command=self.chat_display.yview)
         scrollbar.pack(side="right", fill="y")
+        self.chat_display.config(yscrollcommand=scrollbar.set, state="disabled")
 
-        self.chat_display.tag_config("pilot", foreground="#00ccff", font=("Helvetica", 12, "bold"))
-        self.chat_display.tag_config("user", foreground="#ffffff", font=("Helvetica", 12))
-        self.chat_display.tag_config("match", foreground="#66ff66", font=("Helvetica", 12, "italic"))
-        self.chat_display.tag_config("score", foreground="#ffcc00", font=("Helvetica", 12))
-        self.chat_display.tag_config("system", foreground="#888888", font=("Helvetica", 11, "italic"))
+    # Recording indicator
+        self.recording_label = tk.Label(self, text="", font=("Helvetica", 12, "bold"),
+                                    fg="#00ffcc", bg="#1a1a1a")
+        self.recording_label.pack(pady=(0, 5))
 
-        self.recording_label = tk.Label(self, text="", font=("Helvetica", 12, "bold"), fg="#00ffcc", bg="#1a1a1a")
-        self.recording_label.pack()
-
-        self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round, font=("Helvetica", 13),
-                                    bg="#00cc99", fg="black", width=12, state="disabled")
+    # Run button
+        self.run_button = tk.Button(self, text="▶️ Run", command=self.run_round,
+                                font=("Helvetica", 13), bg="#00cc99", fg="black", width=16)
         self.run_button.pack(pady=5)
 
-        tk.Button(self, text="❌ End Session", command=self.end_session,
-                  font=("Helvetica", 12), bg="#333333", fg="white", width=15).pack(pady=5)
+    # End Session button
+        self.end_button = tk.Button(self, text="❌ End Session", command=self.end_session,
+                                font=("Helvetica", 12), bg="#333333", fg="white", width=16)
+        self.end_button.pack(pady=10)
 
     def create_log_file(self):
         if not os.path.exists("logs"):
@@ -167,6 +161,7 @@ class TrainingSessionWindow(tk.Toplevel):
         self.chat_display.insert(tk.END, f"{text}\n\n")
         self.chat_display.see(tk.END)
         self.chat_display.config(state="disabled")
+
 
     def end_session(self):
         messagebox.showinfo("Session Ended", f"Session log saved to:\n{self.log_file}")

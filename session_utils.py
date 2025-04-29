@@ -26,27 +26,37 @@ def transcribe_audio(filename):
     result = model.transcribe(filename)
     return result["text"]
 
+def normalize_transcript(text):
+    # Simple spoken number map
+    num_map = {
+        "zero": "0", "one": "1", "two": "2", "three": "3",
+        "four": "4", "five": "5", "six": "6",
+        "seven": "7", "eight": "8", "nine": "9"
+    }
+
+    words = text.lower().split()
+    normalized = [num_map.get(word, word) for word in words]
+    return " ".join(normalized)
+
 def match_phrase(transcript, cowboy_mode=False):
     from phrasebook import faa_phrases
+
+    normalized_transcript = normalize_transcript(transcript)
 
     best_match = None
     best_score = -1
 
     for call, data in faa_phrases.items():
-        score = fuzz.ratio(transcript.lower(), call.lower())
+        score = fuzz.ratio(normalized_transcript, call.lower())
         if score > best_score:
             best_match = call
             best_score = score
 
     expected = faa_phrases.get(best_match, {}).get("expected_response", "")
 
-    # Accent-friendly: lower threshold
-    threshold = 70
-
-    if best_score >= threshold:
+    if best_score >= 70:
         return expected, best_score
     else:
-        # Low score: ask human trainer for decision
         root = tk.Tk()
         root.withdraw()
         response = messagebox.askyesno(
