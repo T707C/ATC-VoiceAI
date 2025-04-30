@@ -61,40 +61,37 @@ def normalize_transcript(text):
     """Normalize the transcript (convert to lowercase and strip extra spaces)."""
     return text.lower().strip()
 
-def match_phrase(transcript, parent=None):
-    """Match the transcript to known FAA phrases and return the best match and score."""
+def match_phrase(transcript, pilot_phrase, parent=None):
     from phrasebook import faa_phrases
 
-    transcript = digits_to_words(transcript)      # Convert 1 2 3 → one two three
-    normalized_transcript = normalize_transcript(transcript)  # Just lowercase + strip
+    transcript = digits_to_words(transcript)
+    normalized_transcript = normalize_transcript(transcript)
 
-    best_match = None
-    best_score = -1
+    expected = faa_phrases.get(pilot_phrase, {}).get("expected_response", "")
 
-    for call, data in faa_phrases.items():
-        score = fuzz.ratio(normalized_transcript, call.lower())
-        if score > best_score:
-            best_match = call
-            best_score = score
+    if not expected:
+        return "Unmatched/Incorrect", 0
 
-    expected = faa_phrases.get(best_match, {}).get("expected_response", "")
+    expected_normalized = normalize_transcript(expected)
 
-    if best_score >= 70:
-        return expected, best_score
+    score = fuzz.ratio(normalized_transcript, expected_normalized)
+
+    if score >= 70:
+        return expected, score
     else:
         if parent is not None:
             response = messagebox.askyesno(
                 "Low Match Score",
-                f"Match score is {best_score}%.\nAccept this response?",
+                f"Match score is {score}%.\nAccept this response?",
                 parent=parent
             )
         else:
             response = messagebox.askyesno(
                 "Low Match Score",
-                f"Match score is {best_score}%.\nAccept this response?"
+                f"Match score is {score}%.\nAccept this response?"
             )
 
         if response:
-            return expected, best_score
+            return expected, score
         else:
-            return "Unmatched/Incorrect", best_score
+            return "Unmatched/Incorrect", score

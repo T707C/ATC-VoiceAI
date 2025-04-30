@@ -137,6 +137,8 @@ class TrainingSessionWindow(tk.Toplevel):
 
     def run_round(self):
         self.run_button.config(state="disabled")
+    
+        # Speak the pilot phrase
         speak(self.round_data["pilot"])
 
         self.recording_label.config(text="🎙️ Recording...")
@@ -151,14 +153,19 @@ class TrainingSessionWindow(tk.Toplevel):
         self.attributes('-topmost', False)
 
         transcript = transcribe_audio(filename)
-        clean_transcript = digits_to_words(transcript)  # <<< ADD THIS
-        matched, score = match_phrase(clean_transcript, parent=self)  # <<< USE clean_transcript for matching
+        clean_transcript = digits_to_words(transcript)  # <<< CONVERT transcript
 
+        # NEW: Save current pilot phrase
+        pilot_phrase = self.round_data["pilot"]
+
+        # MATCH clean_transcript to the correct pilot phrase
+        matched, score = match_phrase(clean_transcript, pilot_phrase, parent=self)
 
         self.append_chat(f"🎧 YOU: {clean_transcript}")
         self.append_chat(f"✅ MATCH: {matched}")
         self.append_chat(f"🧠 SCORE: {score}%\n" + "-" * 50)
 
+        # Log to CSV
         with open(self.log_file, "a") as f:
             f.write(f"{datetime.datetime.now()},{self.round_data['pilot']},{clean_transcript},{matched},{score}\n")
 
