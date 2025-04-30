@@ -31,15 +31,18 @@ def record_audio(duration=5, sample_rate=16000):
     return temp_file.name
 
 def normalize_numbers(text):
-    """Normalize numbers into words, but avoid combining multi-digit numbers."""
+    """Normalize numbers into words, and handle decimal points like '.eight'."""
+    # Fix decimal cases first (e.g., ".eight" -> "point eight")
+    text = re.sub(r'\b\.(\w+)\b', r'point \1', text)
+
     def replace_func(match):
         number = match.group(0)
         # Only convert individual digits
         if len(number) == 1:
             return num2words(number).replace("-", " ")  # e.g., "2" → "two"
         return number  # Do not convert multi-digit numbers like "27"
-    
-    return re.sub(r'\b\d+\b', replace_func, text)
+
+    return re.sub(r'\b\d+\b', replace_func, text)  # Replace numbers with words
 
 def transcribe_audio(filename):
     print("Transcribing...")
