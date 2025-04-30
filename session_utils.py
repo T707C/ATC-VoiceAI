@@ -9,11 +9,18 @@ import scipy.io.wavfile as wav
 from rapidfuzz import fuzz
 import tkinter as tk
 from tkinter import messagebox
-import re                    # <-- (NEW) Added import
-from num2words import num2words  # <-- (NEW) Added import for converting numbers to words
+import re
+from num2words import num2words
+import string
 
-# Load Whisper Model (once)
+# Load Whisper Model
 model = whisper.load_model("base")
+
+#Normalize text: lowercase and remove punctuation
+def normalize_text(text):
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    return text.strip()
 
 def record_audio(duration=5, sample_rate=16000):
     print("Recording...")
@@ -32,14 +39,14 @@ def normalize_numbers(text):
             return num2words(number).replace("-", " ")  # e.g., "2" → "two"
         return number  # Do not convert multi-digit numbers like "27"
     
-    return re.sub(r'\b\d+\b', replace_func, text)  # Replace numbers with words
+    return re.sub(r'\b\d+\b', replace_func, text)
 
 def transcribe_audio(filename):
     print("Transcribing...")
     result = model.transcribe(filename)
     text = result["text"]                   # Save the transcription text
     text = normalize_numbers(text.lower())  # Normalize numbers and convert to lowercase
-    return text                             # Return processed text
+    return text
 
 def digits_to_words(text):
     """Convert individual digits to words, e.g., 1 → one, 7 → seven."""
@@ -54,7 +61,7 @@ def digits_to_words(text):
         return ' '.join(digit_word_map.get(d, d) for d in number)
     
     text = text.replace("-", " ")  # Replace hyphens with spaces
-    text = re.sub(r'\b\d+\b', split_number, text)  # Replace digits with words
+    text = re.sub(r'\b\d+\b', split_number, text)
     return text
 
 def normalize_transcript(text):
@@ -64,15 +71,16 @@ def normalize_transcript(text):
 def match_phrase(transcript, pilot_phrase, parent=None):
     from phrasebook import faa_phrases
 
-    transcript = digits_to_words(transcript)
-    normalized_transcript = normalize_transcript(transcript)
+    transcript = digits_to_words(transcript)           #digit to word conversion
+    normalized_transcript = normalize_text(transcript)  #remove punctuation too
 
     expected = faa_phrases.get(pilot_phrase, {}).get("expected_response", "")
 
     if not expected:
         return "Unmatched/Incorrect", 0
 
-    expected_normalized = normalize_transcript(expected)
+    expected = digits_to_words(expected)                 #also run digits_to_words on expected
+    expected_normalized = normalize_text(expected)       #normalize expected text too
 
     score = fuzz.ratio(normalized_transcript, expected_normalized)
 
